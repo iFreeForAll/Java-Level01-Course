@@ -22,45 +22,33 @@ public class FirstApp {
         boolean bool1 = true; //logic, true or false
 
         //checking methods
-        System.out.println(mathExpression(1, 2, 3, 4));
-        System.out.println(tenToTwenty(5, 10));
-        posOrNeg(-5);
-        System.out.println(isItNegative(5));
+        System.out.println(mathExpression(1.4f, 2.5f, 3.0f, 4.1f));
+        System.out.println(checkTwoNumbers(5, 10));
+        isPositive(3);
+        System.out.println(isNegative(5));
         helloUser("Oleg");
-        isLeapYear(2019);
+        isLeapYear(2020);
     }
 
     //a method that returns the result of an expression a  * (b + (c / d))
-    public static int mathExpression (int a, int b, int c, int d) {
-        int result = a  * (b + (c / d));
-        return result;
+    public static float mathExpression (float a, float b, float c, float d) {
+        return a  * (b + (c / d));
     }
 
     //A method that takes a and b and check whether their sum lays between 10 and 20. Returns true if that's the case, otherwise it returns false
-    public static boolean tenToTwenty(int a, int b) {
-        if (a + b >= 10 && a + b <= 20) {
-            return true;
-        } else {
-            return false;
-        }
+    public static boolean checkTwoNumbers(int a, int b) {
+        int sum = a + b;
+        return sum >= 10 && sum <= 20;
     }
 
     //A method that checks whether the parameter is positive or negative (0 is a positive number)
-    public static void posOrNeg(int a) {
-        if (a >= 0) {
-            System.out.println(a + " is positive!");
-        } else {
-            System.out.println(a + " is negative!");
-        }
+    public static void isPositive(int variable) {
+        System.out.println(variable + " is " + ((variable >= 0) ? "positive" : "negative") + "!");
     }
 
     //A method that returns true if the parameter is negative
-    public static boolean isItNegative(int a) {
-        if(a < 0) {
-            return true;
-        } else {
-            return false;
-        }
+    public static boolean isNegative(int variable) {
+        return (variable < 0);
     }
 
     //A method that says "hello, name" to the user
@@ -70,14 +58,6 @@ public class FirstApp {
 
     //A method that check whether the year is a leap-year or a common year
     public static void isLeapYear(int year) {
-        if(year % 4 == 0 && year % 100 != 0) {
-            System.out.println(year + " is a leap-year");
-        } else {
-            if(year % 400 == 0) {
-                System.out.println(year + " is a leap-year");
-            } else {
-                System.out.println(year + " is a common year");
-            }
-        }
+        System.out.println(year + " is a " + (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0) ? "leap-year" : "is a common year") + "!");
     }
 }
