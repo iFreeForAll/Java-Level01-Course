@@ -15,9 +15,9 @@ public class TicTacToe {
     static Scanner sc = new Scanner(System.in);
     static final Random rnd = new Random();
 
-    static final int SIZE_X = 5;
-    static final int SIZE_Y = 5;
-    static final int WIN_CONDITION = 4;
+    static final int SIZE_X = 5; //vertical
+    static final int SIZE_Y = 3; //horizontal
+    static final int WIN_CONDITION = 3;
 
     /** 2D array, first come rows, then columns, hence first Y, then X */
     static char[][] field = new char[SIZE_Y][SIZE_X];
@@ -25,6 +25,16 @@ public class TicTacToe {
     static final char PLAYER_DOT = 'X';
     static final char AI_DOT = 'O';
     static final char EMPTY_DOT = '*';
+
+    /**
+     * printing line of '-' so the field will look better
+     * @param count tells how many symbols we need
+     */
+    public static void printBorder(int count) {
+        System.out.print("  -");
+        for (int i = 0; i < count; i++) System.out.print("-");
+        System.out.println();
+    }
 
     /**
      * initializing our field, filling it with '*'
@@ -41,15 +51,18 @@ public class TicTacToe {
      * printing the field in console
      */
     public static void printField() {
-        System.out.println("-------");
+        System.out.print("   ");
+        for (int i = 0; i < SIZE_X; i++) System.out.print(i + 1 + " ");
+        System.out.println();
+        printBorder(SIZE_X * 2);
         for (int i = 0; i < SIZE_Y; i++) {
-            System.out.print("|");
+            System.out.print(i + 1 + " |");
             for (int j = 0; j < SIZE_X; j++) {
                 System.out.print(field[i][j] + "|");
             }
             System.out.println();
         }
-        System.out.println("-------");
+        printBorder(SIZE_X * 2);
     }
 
     /**
@@ -69,7 +82,7 @@ public class TicTacToe {
      * @return boolean value
      */
     public static boolean isStepValid(int y, int x) {
-        if(x < 0 || y < 0 || x > SIZE_X - 1 || y > SIZE_Y - 1) {
+        if(x < 0 || y < 0 || x >= SIZE_X || y >= SIZE_Y) {
             return false;
         }
         return(field[y][x] == EMPTY_DOT);
@@ -82,9 +95,11 @@ public class TicTacToe {
         int x, y;
 
         do {
-            System.out.println("Enter coordinates: X Y (1 - " + SIZE_X + ")");
-            x = sc.nextInt() - 1;
+            System.out.println("Enter coordinates!");
+            System.out.print ("Row coordinate (1 to " + SIZE_Y + "): ");
             y = sc.nextInt() - 1;
+            System.out.print ("Column coordinate (1 to " + SIZE_X + "): ");
+            x = sc.nextInt() - 1;
         } while (!isStepValid(y, x));
 
         setSymbol(y, x, PLAYER_DOT);
@@ -97,30 +112,29 @@ public class TicTacToe {
         int x, y;
 
         //first AI checks if it can win, and sets its dot there
-        for (int i = 0; i < SIZE_Y; i++) {
-            for (int j = 0; j < SIZE_X; j++) {
-                if(isStepValid(i, j)) {
-                    setSymbol(i, j, AI_DOT);
+        for (int i = 1; i <= SIZE_Y; i++) { //3
+            for (int j = 1; j <= SIZE_X; j++) { //5
+                if(isStepValid(i-1, j-1)) {
+                    setSymbol(i-1, j-1, AI_DOT);
                     if(checkWin()) {
-                        setSymbol(i, j, AI_DOT);
                         return;
                     } else {
-                        setSymbol(i, j, EMPTY_DOT);
+                        setSymbol(i-1, j-1, EMPTY_DOT);
                     }
                 }
             }
         }
 
         //after, it checks of a player can win and tries to prevent it
-        for (int i = 0; i < SIZE_X; i++) {
-            for (int j = 0; j < SIZE_Y; j++) {
-                if (isStepValid(i, j)) {
-                    setSymbol(i, j, PLAYER_DOT);
+        for (int i = 1; i <= SIZE_X; i++) {
+            for (int j = 1; j <= SIZE_Y; j++) {
+                if (isStepValid(i-1, j-1)) {
+                    setSymbol(i-1, j-1, PLAYER_DOT);
                     if(checkWin()) {
-                        setSymbol(i, j, AI_DOT);
+                        setSymbol(i-1, j-1, AI_DOT);
                         return;
                     } else {
-                        setSymbol(i, j, EMPTY_DOT);
+                        setSymbol(i-1, j-1, EMPTY_DOT);
                     }
                 }
             }
@@ -136,7 +150,7 @@ public class TicTacToe {
     }
 
     /**
-     * checking if the field is full to determine if the game is over
+     * checking if the field is full
      * @return boolean value
      */
     public static boolean isFieldFull() {
@@ -147,6 +161,7 @@ public class TicTacToe {
                 }
             }
         }
+        System.out.println("DRAW!");
         return true;
     }
 
@@ -166,13 +181,13 @@ public class TicTacToe {
             int dy = d[1]; //y
 
             //going through each element of the field
-            for (int i = 0; i < SIZE_Y; i++) {
-                for (int j = 0; j < SIZE_X; j++) {
+            for (int i = 0; i < SIZE_Y; i++) { //5
+                for (int j = 0; j < SIZE_X; j++) { //3
                     count = 0; //for the future to check win condition
 
                     //these are coordinates of the last element from the initial one
-                    int lastX = i + (WIN_CONDITION - 1) * dx;
-                    int lastY = j + (WIN_CONDITION - 1) * dy;
+                    int lastX = i + (WIN_CONDITION - 1) * dx; //2
+                    int lastY = j + (WIN_CONDITION - 1) * dy; //2
 
                     //checking if these coordinates are in the field bounds
                     if(lastX >= 0 && lastX < SIZE_Y && lastY >= 0 && lastY < SIZE_X) {
