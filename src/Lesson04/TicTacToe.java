@@ -1,12 +1,14 @@
 package Lesson04;
 
+import com.sun.org.apache.bcel.internal.generic.IF_ACMPEQ;
+
 import java.util.Random;
 import java.util.Scanner;
 
 /**
  * Simple game Tic Tac Toe in console
  *
- * @version     1.0 05 Sep 2019
+ * @version     2.0 24 Oct 2019
  * @author      Oleg Khlebnikov
  */
 
@@ -15,29 +17,21 @@ public class TicTacToe {
     static Scanner sc = new Scanner(System.in);
     static final Random rnd = new Random();
 
+    /** Game field parameters */
     static final int SIZE_X = 5; //vertical
-    static final int SIZE_Y = 3; //horizontal
+    static final int SIZE_Y = 5; //horizontal
     static final int WIN_CONDITION = 3;
 
     /** 2D array, first come rows, then columns, hence first Y, then X */
     static char[][] field = new char[SIZE_Y][SIZE_X];
 
+    /** Game elements for UI */
     static final char PLAYER_DOT = 'X';
     static final char AI_DOT = 'O';
     static final char EMPTY_DOT = '*';
 
     /**
-     * printing line of '-' so the field will look better
-     * @param count tells how many symbols we need
-     */
-    public static void printBorder(int count) {
-        System.out.print("  -");
-        for (int i = 0; i < count; i++) System.out.print("-");
-        System.out.println();
-    }
-
-    /**
-     * initializing our field, filling it with '*'
+     * initializing our field, filling it with EMPTY_DOTs
      */
     public static void initField() {
         for (int i = 0; i < SIZE_Y; i++) {
@@ -45,6 +39,16 @@ public class TicTacToe {
                 field[i][j] = EMPTY_DOT;
             }
         }
+    }
+
+    /**
+     * borders for top and bottom of the field
+     * @param count tells how many symbols we need
+     */
+    public static void printBorder(int count) {
+        System.out.print("  -");
+        for (int i = 0; i < count; i++) System.out.print("-");
+        System.out.println();
     }
 
     /**
@@ -66,7 +70,7 @@ public class TicTacToe {
     }
 
     /**
-     * setting a symbol in the field
+     * set a symbol on the field
      * @param y row
      * @param x column
      * @param sym symbol, user or AI
@@ -76,20 +80,7 @@ public class TicTacToe {
     }
 
     /**
-     * checking whether we can set a symbol in the field at this position
-     * @param y row
-     * @param x column
-     * @return boolean value
-     */
-    public static boolean isStepValid(int y, int x) {
-        if(x < 0 || y < 0 || x >= SIZE_X || y >= SIZE_Y) {
-            return false;
-        }
-        return(field[y][x] == EMPTY_DOT);
-    }
-
-    /**
-     * asking user to choose coordinates to set PLAYER_DOT in the field
+     * Player step
      */
     public static void playerStep() {
         int x, y;
@@ -106,35 +97,72 @@ public class TicTacToe {
     }
 
     /**
-     * setting AI_DOT in the field
+     * AI step
      */
     public static void aiStep() {
         int x, y;
 
-        //first AI checks if it can win, and sets its dot there
-        for (int i = 1; i <= SIZE_Y; i++) { //3
-            for (int j = 1; j <= SIZE_X; j++) { //5
-                if(isStepValid(i-1, j-1)) {
-                    setSymbol(i-1, j-1, AI_DOT);
-                    if(checkWin()) {
-                        return;
-                    } else {
-                        setSymbol(i-1, j-1, EMPTY_DOT);
+        /** check if there's a winning condition */
+        for (int v = 0; v < SIZE_Y; v++) {
+            for (int h = 0; h < SIZE_X; h++) {
+                if (h + WIN_CONDITION <= SIZE_X) {
+                    //horizon check
+                    if (checkHorizon(v, h, AI_DOT) == WIN_CONDITION - 1) {
+                        if (aiMoveHorizontal(v, h, AI_DOT)) return;
+                    }
+
+                    //up diagonal check
+                    if (v - WIN_CONDITION > -2) {
+                        if (checkDiagonalUp(v, h, AI_DOT) == WIN_CONDITION - 1) {
+                            if (aiMoveDiagonalUp(v, h, AI_DOT)) return;
+                        }
+                    }
+
+                    //down diagonal check
+                    if (v + WIN_CONDITION <= SIZE_Y) {
+                        if (checkDiagonalDown(v, h, AI_DOT) == WIN_CONDITION) {
+                            if (aiMoveDiagonalDown(v, h, AI_DOT)) return;
+                        }
+                    }
+                }
+
+                //vertical check
+                if (v + WIN_CONDITION <= SIZE_Y) {
+                    if (checkVertical(v, h, AI_DOT) == WIN_CONDITION) {
+                        if (aiMoveVertical(v, h, AI_DOT)) return;
                     }
                 }
             }
         }
 
-        //after, it checks of a player can win and tries to prevent it
-        for (int i = 1; i <= SIZE_X; i++) {
-            for (int j = 1; j <= SIZE_Y; j++) {
-                if (isStepValid(i-1, j-1)) {
-                    setSymbol(i-1, j-1, PLAYER_DOT);
-                    if(checkWin()) {
-                        setSymbol(i-1, j-1, AI_DOT);
-                        return;
-                    } else {
-                        setSymbol(i-1, j-1, EMPTY_DOT);
+        /** check if a player can win */
+        for (int v = 0; v < SIZE_Y; v++) {
+            for (int h = 0; h < SIZE_X; h++) {
+                if (h + WIN_CONDITION <= SIZE_X) {
+                    //horizon check
+                    if (checkHorizon(v, h, PLAYER_DOT) == WIN_CONDITION - 1) {
+                        if (aiMoveHorizontal(v, h, AI_DOT)) return;
+                    }
+
+                    //up diagonal check
+                    if (v - WIN_CONDITION > -2) {
+                        if (checkDiagonalUp(v, h, PLAYER_DOT) == WIN_CONDITION - 1) {
+                            if (aiMoveDiagonalUp(v, h, AI_DOT)) return;
+                        }
+                    }
+
+                    //down diagonal check
+                    if (v + WIN_CONDITION <= SIZE_Y) {
+                        if (checkDiagonalDown(v, h, PLAYER_DOT) == WIN_CONDITION) {
+                            if (aiMoveDiagonalDown(v, h, AI_DOT)) return;
+                        }
+                    }
+                }
+
+                //vertical check
+                if (v + WIN_CONDITION <= SIZE_Y) {
+                    if (checkVertical(v, h, PLAYER_DOT) == WIN_CONDITION) {
+                        if (aiMoveVertical(v, h, AI_DOT)) return;
                     }
                 }
             }
@@ -147,6 +175,88 @@ public class TicTacToe {
         } while (!isStepValid(y, x));
 
         setSymbol(y, x, AI_DOT);
+    }
+
+    /**
+     * AI step diagonal up
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static boolean aiMoveDiagonalUp(int v, int h, char dot) {
+        for (int i = 0, j = 0; j < WIN_CONDITION; i--, j++) {
+            if(field[i + v][j + h] == EMPTY_DOT) {
+                field[i + v][j + h] = dot;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * AI step diagonal down
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static boolean aiMoveDiagonalDown(int v, int h, char dot) {
+        for (int i = 0; i < WIN_CONDITION; i++) {
+            if(field[i + v][i + h] == EMPTY_DOT) {
+                field[i + v][i + h] = dot;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * AI step horizontal
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static boolean aiMoveHorizontal(int v, int h, char dot) {
+        for (int i = h; i < WIN_CONDITION + h; i++) {
+            if(field[v][i] == EMPTY_DOT) {
+                field[v][i] = dot;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * AI step vertical
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static boolean aiMoveVertical(int v, int h, char dot) {
+        int count = 0;
+        for (int i = v; i < WIN_CONDITION + v; i++) {
+            if(field[i][h] == EMPTY_DOT) {
+                field[i][h] = dot;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * check if step is on the field and if it's valid or not
+     * @param y row
+     * @param x column
+     * @return boolean value
+     */
+    public static boolean isStepValid(int y, int x) {
+        if(x < 0 || y < 0 || x >= SIZE_X || y >= SIZE_Y) {
+            return false;
+        }
+        return(field[y][x] == EMPTY_DOT);
     }
 
     /**
@@ -167,47 +277,96 @@ public class TicTacToe {
 
     /**
      * checking if there's a win condition on the field
-     * it uses algebraic vectors
-     * works for any field size
      */
-    public static boolean checkWin() {
-        //we have 4 directions (vectors) to check all possible win conditions in a 2D array
-        //{0, 1} - vertical, {1, 1} - diagonal up, {1, 0} - horizontal, {1, -1} - diagonal down
-        int[][] vectors = {{0, 1}, {1, 1}, {1, 0}, {1, -1}};
-        int count;
+    public static boolean checkWin(char dot) {
+        for (int v = 0; v < SIZE_Y; v++) {
+            for (int h = 0; h < SIZE_X; h++) {
+                if (h + WIN_CONDITION <= SIZE_X) {
+                    //horizon check
+                    if (checkHorizon(v, h, dot) >= WIN_CONDITION) return true;
 
-        for (int[] d : vectors) {
-            int dx = d[0]; //x
-            int dy = d[1]; //y
-
-            //going through each element of the field
-            for (int i = 0; i < SIZE_Y; i++) { //5
-                for (int j = 0; j < SIZE_X; j++) { //3
-                    count = 0; //for the future to check win condition
-
-                    //these are coordinates of the last element from the initial one
-                    int lastX = i + (WIN_CONDITION - 1) * dx; //2
-                    int lastY = j + (WIN_CONDITION - 1) * dy; //2
-
-                    //checking if these coordinates are in the field bounds
-                    if(lastX >= 0 && lastX < SIZE_Y && lastY >= 0 && lastY < SIZE_X) {
-                        char dot = field[i][j]; //dot in the initial element
-
-                        //checking if all elements between the initial and the last one are equal
-                        for (int k = 1; k < WIN_CONDITION; k++) {
-                            if(dot != EMPTY_DOT && field[i + k*dx][j + k*dy] == dot) {
-                                count++;
-                            }
-
-                            if(count == WIN_CONDITION - 1) {
-                                return true;
-                            }
-                        }
+                    //up diagonal check
+                    if (v - WIN_CONDITION > -2) {
+                        if (checkDiagonalUp(v, h, dot) >= WIN_CONDITION) return true;
                     }
+
+                    //down diagonal check
+                    if (v + WIN_CONDITION <= SIZE_Y) {
+                        if (checkDiagonalDown(v, h, dot) >= WIN_CONDITION) return true;
+                    }
+                }
+
+                //vertical check
+                if (v + WIN_CONDITION <= SIZE_Y) {
+                    if (checkVertical(v, h, dot) >= WIN_CONDITION) return true;
                 }
             }
         }
         return false;
+    }
+
+    /**
+     * checks diagonal line up for filling
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static int checkDiagonalUp(int v, int h, char dot) {
+        int count = 0;
+        for (int i = 0, j = 0; j < WIN_CONDITION; i--, j++) {
+            if(field[i + v][j + h] == dot)
+                count++;
+        }
+        return count;
+    }
+
+    /**
+     * checks diagonal line down for filling
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static int checkDiagonalDown(int v, int h, char dot) {
+        int count = 0;
+        for (int i = 0; i < WIN_CONDITION; i++) {
+            if(field[i + v][i + h] == dot)
+                count++;
+        }
+        return count;
+    }
+
+    /**
+     * checks horizontal line for filling
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static int checkHorizon(int v, int h, char dot) {
+        int count = 0;
+        for (int i = h; i < WIN_CONDITION + h; i++) {
+            if(field[v][i] == dot)
+                count++;
+        }
+        return count;
+    }
+
+    /**
+     * checks vertical line for filling
+     * @param v vertical
+     * @param h horizontal
+     * @param dot player/AI dot
+     * @return
+     */
+    private static int checkVertical(int v, int h, char dot) {
+        int count = 0;
+        for (int i = v; i < WIN_CONDITION + v; i++) {
+            if(field[i][h] == dot)
+                count++;
+        }
+        return count;
     }
 
     public static void main(String[] args) {
@@ -218,7 +377,7 @@ public class TicTacToe {
             playerStep();
             printField();
 
-            if (checkWin()) {
+            if (checkWin(PLAYER_DOT)) {
                 System.out.println("You WIN!");
                 break;
             }
@@ -230,7 +389,7 @@ public class TicTacToe {
             aiStep();
             printField();
 
-            if (checkWin()) {
+            if (checkWin(AI_DOT)) {
                 System.out.println("AI WIN!");
                 break;
             }
