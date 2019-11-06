@@ -1,4 +1,4 @@
-package Lesson03;
+package Lesson05;
 
 import Lesson05.Person;
 
