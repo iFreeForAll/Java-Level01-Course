@@ -3,26 +3,31 @@ package Lesson06;
 public class Main {
     public static void main(String[] args) {
 
-        Cat cat = new Cat();
-        Dog dog = new Dog();
+        Cat cat = new Cat("Baitik", 2, 200, 1);
+        Dog dog = new Dog("Ada", 0.5f, 500, 10);
 
-//        System.out.println(cat.getJUMP_HEIGTH());
-//        System.out.println(cat.getRUN_LENGTH());
-//
-//        System.out.println(dog.getJUMP_HEIGTH());
-//        System.out.println(dog.getRUN_LENGTH());
-//        System.out.println(dog.getSWIM_DISTANCE());
+        Animal[] arr = {cat, dog};
+        float toJump = 1.5f;
+        float toRun = 350;
+        float toSwim = 5;
 
-        System.out.println();
+        for (int i = 0; i < arr.length; i++) {
+            String nameString = arr[i].getType() + " " + arr[i].getName() + " can ";
 
-        cat.run(300.0f);
-        cat.jump(1.5f);
-        cat.swim(9.0f);
+            String eventName = String.format("jump max %.2fm. Tries to jump ", arr[i].getMaxJump());
+            String eventResult = (arr[i].jump(toJump)) ? "succeeds" : "fails";
+            System.out.println(nameString + eventName + toJump + "m, and " + eventResult);
 
-        System.out.println();
+            eventName = String.format("run max %.2fm. Tries to run ", arr[i].getMaxRun());
+            eventResult = (arr[i].run(toRun)) ? "succeeds" : "fails";
+            System.out.println(nameString + eventName + toRun + "m, and " + eventResult);
 
-        dog.run(300.0f);
-        dog.jump(1.5f);
-        dog.swim(9.0f);
+            int swimResults = arr[i].swim(toSwim);
+            eventName = String.format("swim max %.2fm. Tries to swim ", arr[i].getMaxSwim());
+            eventResult = (swimResults == Animal.SWIM_OK) ? "succeeds" : "fails";
+            if (swimResults == Animal.SWIM_ERROR)
+                eventResult = "couldn't do it because scares of the water...";
+            System.out.println(nameString + eventName + toSwim + "m, and " + eventResult);
+        }
     }
 }
